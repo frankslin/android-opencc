@@ -8,10 +8,23 @@ android {
         minSdkVersion 14
         targetSdkVersion 30
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                // Only libChineseConverter.so is wanted in the AAR; OpenCC's
+                // command line tools and dictionary generation targets are
+                // excluded from the build (see src/main/jni/CMakeLists.txt).
+                targets 'ChineseConverter'
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
     }
     externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
+        cmake {
+            path 'src/main/jni/CMakeLists.txt'
+            // OpenCC's CMakeLists.txt requires CMake >= 3.12, so the 3.10.2
+            // that AGP would otherwise pick is not enough.
+            version '3.18.1'
         }
     }
 
