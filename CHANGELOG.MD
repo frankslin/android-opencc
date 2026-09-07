@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hand-written ndk-build files, so an OpenCC upgrade is a submodule bump (#2)
 - Remove the stray IDE workspace backup, the dead Bintray publishing properties
   and the wrong ProGuard file name in the demo app
+- The dictionary data in the application's files directory is now versioned:
+  `openccdata/VERSION` is compared with the bundled copy on the first
+  conversion in each process and the data is re-installed when it differs,
+  so an upgrade takes effect without the app calling `clearDictDataFolder()`.
+  The `zFinished2` marker file is gone. Concurrent first calls no longer copy
+  the data twice, and a failed copy raises `IllegalStateException` instead of
+  being logged and then crashing in native code
+
 
 ### Fixed
 - Characters outside the Basic Multilingual Plane (CJK Extension B and later,

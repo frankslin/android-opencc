@@ -71,7 +71,7 @@ To use Chinese converter is easy, just call `ChineseConverter.convert(originalTe
 
 android-opencc leverages on the original OpenCC project and invoke the native code via JNI, the text phrase dictionary files are shipped in the assets folder. Android NDK does not provide means to create and read file streams from directly from assets folder, therefore the dictionary files are then copied to the application data folder in the first call of `ChineseConverter.convert()`
 
-If you need to update the dictionary files in the assets folder, please remember to call `ChineseConverter.clearDictDataFolder()` once to clear the old dictionary files, so the new dictionary files will be effective in the next `ChineseConverter.convert()` call.
+The `openccdata/VERSION` file records which dictionary data is bundled. On the first `ChineseConverter.convert()` call in each process the library compares it with the copy in the application data folder and re-installs the data when they differ, so upgrading the library (or replacing the assets and changing `VERSION`) takes effect on its own. `ChineseConverter.clearDictDataFolder()` is still available to force a re-install but is no longer needed after an upgrade.
 
 # Compilation
 
