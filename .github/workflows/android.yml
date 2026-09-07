@@ -42,6 +42,9 @@ jobs:
       - name: Build, lint and run unit tests
         run: ./gradlew build --stacktrace
 
+      - name: Check that the library publishes (POM, AAR, sources jar)
+        run: ./gradlew :lib-opencc-android:publishToMavenLocal --stacktrace
+
       - name: Upload the library AAR
         uses: actions/upload-artifact@v4
         with:

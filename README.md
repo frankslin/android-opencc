@@ -24,29 +24,27 @@ in Simplified Chinese and using Mainland China terminology
 
 # Installation
 
-The artifact published on JitPack is the upstream 1.2.0 release, which predates
-the fixes in this repository (OpenCC 1.4.2, the JNI use-after-free fix). Until a
-new release is published, use this repository as a source dependency: add it as a
-git submodule and `include ':lib-opencc-android'` from your settings.gradle.
-
-To use the published 1.2.0 artifact, add JitPack at the end of the repositories in
-your root build.gradle:
+Releases are built by [JitPack](https://jitpack.io) from Git tags of this repository
+(`jitpack.yml`). Add JitPack to your repositories (settings.gradle
+`dependencyResolutionManagement`, or the root build.gradle on older setups):
 ```
-allprojects {
-	repositories {
-	...
-	    maven { url 'https://jitpack.io' }
-	}
-}
-```
-
-```
-// Add the dependency
-dependencies {
+repositories {
     ...
-	implementation 'com.github.qichuan:android-opencc:1.2.0'
+    maven { url 'https://jitpack.io' }
 }
 ```
+
+and depend on a tag, or on a commit hash / `master-SNAPSHOT` before a tag exists:
+```
+dependencies {
+    implementation 'com.github.frankslin:android-opencc:<tag>'
+}
+```
+
+The library needs Android 5.0 (API 21) or newer. The older
+`com.github.qichuan:android-opencc:1.2.0` artifact predates every fix in this
+repository. Alternatively add this repository as a git submodule and
+`include ':lib-opencc-android'` from your settings.gradle.
 
 # Usage
 To use Chinese converter is easy, just call `ChineseConverter.convert(originalText, conversionType, context)`.

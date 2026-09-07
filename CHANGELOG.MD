@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `hk2sp.json` configs that ship with OpenCC 1.4.2
 
 ### Changed
+- The library module applies `maven-publish` (release AAR plus sources jar,
+  coordinates `com.github.frankslin:android-opencc`) and a `jitpack.yml`
+  describes the JitPack build, so tags can be consumed from JitPack again
+- The demo app lists every `ConversionType` in its spinner instead of a
+  hand-maintained subset of ten
 - Converters are cached per conversion type in native memory, so only the
   first conversion with a type pays for loading its dictionaries (about
   150 ms for `s2twp` on a desktop JVM, more on a phone); later calls take
