@@ -73,6 +73,20 @@ android-opencc leverages on the original OpenCC project and invoke the native co
 
 The `openccdata/VERSION` file records which dictionary data is bundled. On the first `ChineseConverter.convert()` call in each process the library compares it with the copy in the application data folder and re-installs the data when they differ, so upgrading the library (or replacing the assets and changing `VERSION`) takes effect on its own. `ChineseConverter.clearDictDataFolder()` is still available to force a re-install but is no longer needed after an upgrade.
 
+# Updating the dictionary data
+
+The dictionaries and configs under `lib-opencc-android/src/main/assets/openccdata` are
+generated from the OpenCC submodule. After bumping the submodule, run
+
+```
+scripts/update-opencc-data.sh
+```
+
+on a little-endian host with cmake, a C++17 compiler and python3. It builds OpenCC's
+`opencc_dict` for the host, compiles every dictionary to `.ocd2`, copies the conversion
+configs and writes the `VERSION` marker, then commit the assets together with the
+submodule change.
+
 # Compilation
 
 The native part is built with CMake from `lib-opencc-android/src/main/jni/CMakeLists.txt`,
