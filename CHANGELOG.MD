@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The `zFinished2` marker file is gone. Concurrent first calls no longer copy
   the data twice, and a failed copy raises `IllegalStateException` instead of
   being logged and then crashing in native code
-
+- Ship consumer ProGuard rules in the AAR that keep the JNI entry point, so
+  apps with a custom R8 configuration cannot break the native binding
 
 ### Fixed
 - Characters outside the Basic Multilingual Plane (CJK Extension B and later,
