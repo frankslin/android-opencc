@@ -9,11 +9,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 /**
  * Created by zhangqichuan on 29/2/16.
  */
 public class ChineseConverter {
+
+    // StandardCharsets.UTF_8 needs API 19; Charset.forName() works on every API level.
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     /***
      * @param text           the text to be converted to
@@ -27,7 +31,9 @@ public class ChineseConverter {
             initialize(context);
         }
         File dataFolder = new File(context.getFilesDir() + "/openccdata");
-        return convert(text, conversionType.getValue(), dataFolder.getAbsolutePath());
+        byte[] converted = convert(text.getBytes(UTF_8), conversionType.getValue(),
+                dataFolder.getAbsolutePath());
+        return converted == null ? null : new String(converted, UTF_8);
     }
 
     /***
@@ -47,7 +53,13 @@ public class ChineseConverter {
         fileOrDirectory.delete();
     }
 
-    private static native String convert(String text, String configFile, String absoluteDataFolderPath);
+    /**
+     * The text is passed as UTF-8 bytes rather than as a String: JNI's string
+     * functions use Modified UTF-8, which cannot represent characters outside
+     * the Basic Multilingual Plane the way OpenCC's dictionaries expect. See
+     * the comment on the native side.
+     */
+    private static native byte[] convert(byte[] utf8Text, String configFile, String absoluteDataFolderPath);
 
     private static void initialize(Context context) {
         copyFolder("openccdata", context);

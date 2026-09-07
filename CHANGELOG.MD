@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and the wrong ProGuard file name in the demo app
 
 ### Fixed
+- Characters outside the Basic Multilingual Plane (CJK Extension B and later,
+  emoji) are now converted correctly: the text crosses JNI as UTF-8 bytes
+  instead of Modified UTF-8 strings, so dictionary entries such as 㓆 -> 𠗣
+  match, and results containing such characters no longer trip CheckJNI or
+  come back corrupted
 - Use-after-free of the JNI text buffer in `ChineseConverter.convert()`, the
   cause of the SIGSEGV / bad_alloc / "not valid Modified UTF-8" crashes (#3)
 
