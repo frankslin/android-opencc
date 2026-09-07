@@ -9,17 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# NDK r21's clang links against libtinfo.so.5, which Ubuntu 24.04 no longer
-# packages, so the jobs run on ubuntu-22.04 where it can still be installed.
-# This goes away with the NDK upgrade.
-
 env:
-  SDK_PACKAGES: platforms;android-35 build-tools;35.0.0 ndk;21.1.6352462 cmake;3.18.1
+  SDK_PACKAGES: platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018 cmake;3.22.1
 
 jobs:
   build:
     name: Build and lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Check out (with the OpenCC submodule)
@@ -35,8 +31,6 @@ jobs:
 
       - name: Install the SDK components pinned by the build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libtinfo5 libncurses5
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
           # shellcheck disable=SC2086
@@ -57,7 +51,7 @@ jobs:
 
   instrumented-tests:
     name: Instrumented tests (API 30 x86_64 emulator)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - name: Check out (with the OpenCC submodule)
@@ -79,8 +73,6 @@ jobs:
 
       - name: Install the SDK components pinned by the build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libtinfo5 libncurses5
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
           # shellcheck disable=SC2086

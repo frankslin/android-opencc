@@ -5,11 +5,12 @@ plugins {
 android {
     namespace 'com.zqc.opencc.android'
     compileSdk 35
-    ndkVersion '21.1.6352462'
+    // Only used to strip the library's native symbols when packaging.
+    ndkVersion '27.2.12479018'
 
     defaultConfig {
         applicationId 'com.zqc.opencc.android'
-        minSdk 15
+        minSdk 21
         targetSdk 35
     }
 

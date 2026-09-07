@@ -5,10 +5,12 @@ plugins {
 android {
     namespace 'com.zqc.opencc.android.lib'
     compileSdk 35
-    ndkVersion '21.1.6352462'
+    // NDK r26+ builds for API 21 and up; r27 aligns shared libraries to
+    // 16 KB pages by default (Android 15+ devices may use them).
+    ndkVersion '27.2.12479018'
 
     defaultConfig {
-        minSdk 14
+        minSdk 21
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         consumerProguardFiles 'consumer-rules.pro'
 
@@ -26,9 +28,10 @@ android {
     externalNativeBuild {
         cmake {
             path 'src/main/jni/CMakeLists.txt'
-            // OpenCC's CMakeLists.txt requires CMake >= 3.12, so the 3.10.2
-            // that AGP would otherwise pick is not enough.
-            version '3.18.1'
+            // OpenCC's CMakeLists.txt requires CMake >= 3.12. 3.22.1 is the
+            // version the SDK ships and AGP 8 defaults to; pinned so every
+            // machine configures with the same one.
+            version '3.22.1'
         }
     }
 
