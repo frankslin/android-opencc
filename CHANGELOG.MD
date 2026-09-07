@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Update the OpenCC submodule to upstream ver.1.4.2 (#1)
+- Build the native library with CMake `add_subdirectory(OpenCC)` instead of
+  hand-written ndk-build files, so an OpenCC upgrade is a submodule bump (#2)
+- Remove the stray IDE workspace backup, the dead Bintray publishing properties
+  and the wrong ProGuard file name in the demo app
+
+### Fixed
+- Use-after-free of the JNI text buffer in `ChineseConverter.convert()`, the
+  cause of the SIGSEGV / bad_alloc / "not valid Modified UTF-8" crashes (#3)
+
 ## [1.2.0] - 2021-05-25
 
 ### Added

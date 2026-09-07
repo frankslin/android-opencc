@@ -6,9 +6,10 @@ An Android port to [OPENCC](https://github.com/BYVoid/OpenCC), a library to conv
 This project uses git submodules to download the source code from OpenCC, please use --recursive flag when cloning this project
 
 ```
- git clone git@github.com:qichuan/android-opencc.git --recursive
-
+git clone --recursive https://github.com/frankslin/android-opencc.git
 ```
+
+If you already cloned without `--recursive`, run `git submodule update --init --recursive`.
 
 ## Example
 ```
@@ -23,7 +24,13 @@ in Simplified Chinese and using Mainland China terminology
 
 # Installation
 
-Add it in your root build.gradle at the end of repositories:
+The artifact published on JitPack is the upstream 1.2.0 release, which predates
+the fixes in this repository (OpenCC 1.4.2, the JNI use-after-free fix). Until a
+new release is published, use this repository as a source dependency: add it as a
+git submodule and `include ':lib-opencc-android'` from your settings.gradle.
+
+To use the published 1.2.0 artifact, add JitPack at the end of the repositories in
+your root build.gradle:
 ```
 allprojects {
 	repositories {
@@ -42,9 +49,9 @@ dependencies {
 ```
 
 # Usage
-To use Chinese converter is easy, just call `ChineseConverter.convert(originalText, conversionType, context));`
+To use Chinese converter is easy, just call `ChineseConverter.convert(originalText, conversionType, context)`.
 
-## Supported conversation types
+## Supported conversion types
 - HK2S, Traditional Chinese (Hong Kong Standard) to Simplified Chinese 香港繁體（香港小學學習字詞表標準）到簡體
 - HK2T, Traditional Chinese (Hong Kong variant) to Traditional Chinese 香港繁體（香港小學學習字詞表標準）到繁體
 - JP2T, New Japanese Kanji (Shinjitai) to Traditional Chinese Characters (Kyūjitai) 日本漢字到繁體
@@ -68,11 +75,12 @@ If you need to update the dictionary files in the assets folder, please remember
 
 # Compilation
 
-You need the Android NDK for compilation, please download the [NDK](http://developer.android.com/ndk/downloads/index.html) and configure the path to NDK in `local.properties` file.
-
-# Example apk
-
-[Download here](https://www.dropbox.com/s/0qzcmchqf5hqyit/android-opencc-0.6.0.apk?dl=1)
+The native part is built with CMake from `lib-opencc-android/src/main/jni/CMakeLists.txt`,
+which consumes the OpenCC submodule as a CMake subproject. You need the Android SDK
+(`ANDROID_HOME` or `sdk.dir` in `local.properties`) with the NDK and CMake versions
+pinned in `lib-opencc-android/build.gradle`; the Android Gradle Plugin downloads them
+on demand when the SDK licences are accepted, otherwise install them with
+`sdkmanager "ndk;21.1.6352462" "cmake;3.18.1"`.
 
 Feel free to feedback if there are any issues, and hope this library can be useful for you.
 
