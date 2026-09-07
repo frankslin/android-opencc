@@ -53,9 +53,11 @@ To use Chinese converter is easy, just call `ChineseConverter.convert(originalTe
 
 ## Supported conversion types
 - HK2S, Traditional Chinese (Hong Kong Standard) to Simplified Chinese 香港繁體（香港小學學習字詞表標準）到簡體
+- HK2SP, Traditional Chinese (Hong Kong variant) to Simplified Chinese with Mainland Chinese idiom 香港繁體到簡體並轉換爲中國大陸常用詞彙
 - HK2T, Traditional Chinese (Hong Kong variant) to Traditional Chinese 香港繁體（香港小學學習字詞表標準）到繁體
 - JP2T, New Japanese Kanji (Shinjitai) to Traditional Chinese Characters (Kyūjitai) 日本漢字到繁體
 - S2HK, Simplified Chinese to Traditional Chinese (Hong Kong Standard) 簡體到香港繁體（香港小學學習字詞表標準）
+- S2HKP, Simplified Chinese to Traditional Chinese (Hong Kong variant) with Hong Kong idiom 簡體到香港繁體並轉換爲香港常用詞彙
 - S2T, Simplified Chinese to Traditional Chinese 簡體到繁體
 - S2TW, Simplified Chinese to Traditional Chinese (Taiwan Standard) 簡體到臺灣正體
 - S2TWP, Simplified Chinese to Traditional Chinese (Taiwan Standard) with Taiwanese idiom 簡體到繁體（臺灣正體標準）並轉換爲臺灣常用詞彙

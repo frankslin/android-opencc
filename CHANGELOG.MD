@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `ConversionType.S2HKP` and `ConversionType.HK2SP`: Simplified Chinese to
+  Hong Kong Traditional Chinese and back with Hong Kong / Mainland regional
+  vocabulary (鼠标 <-> 滑鼠, 文件夹 <-> 資料夾, ...), backed by the `s2hkp.json`
+  and `hk2sp.json` configs that ship with OpenCC 1.4.2
+
 ### Changed
 - Update the OpenCC submodule to upstream ver.1.4.2 (#1)
 - Regenerate the bundled dictionaries and configs from the ver.1.4.2
@@ -15,8 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   since then (for example `tw2t` / `tw2s` no longer turn 什么 into 什幺) and the
   1.4.x config features (normalization via `CJK_Compatibility_Ideographs`,
   `TSCharactersExt`, regional phrase generation). 22 dictionaries and 16
-  configs, 1.4 MB; the `s2hkp` and `hk2sp` configs ship but are not yet
-  exposed through `ConversionType`
+  configs, 1.4 MB
 - Build the native library with CMake `add_subdirectory(OpenCC)` instead of
   hand-written ndk-build files, so an OpenCC upgrade is a submodule bump (#2)
 - Remove the stray IDE workspace backup, the dead Bintray publishing properties

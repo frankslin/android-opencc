@@ -67,6 +67,24 @@ public class ApplicationTest {
     }
 
     @Test
+    public void testHK2SP() {
+        baseTest("伺服器的硬盤裏有一個資料夾，滑鼠和游標都不見了。\n" +
+                        "作業系統的搜尋功能需要寬頻。",
+
+                "服务器的硬盘里有一个文件夹，鼠标和光标都不见了。\n" +
+                        "操作系统的搜索功能需要宽带。", ConversionType.HK2SP);
+    }
+
+    @Test
+    public void testS2HKP() {
+        baseTest("服务器的硬盘里有一个文件夹，鼠标和光标都不见了。\n" +
+                        "操作系统的搜索功能需要宽带。",
+
+                "伺服器的硬盤裏有一個資料夾，滑鼠和游標都不見了。\n" +
+                        "作業系統的搜尋功能需要寬頻。", ConversionType.S2HKP);
+    }
+
+    @Test
     public void testS2T() {
         baseTest("夸夸其谈 夸父逐日\n" +
                         "我干什么不干你事。\n" +
