@@ -8,12 +8,16 @@ package com.zqc.opencc.android.lib;
 public enum ConversionType {
     /** Traditional Chinese (Hong Kong Standard) to Simplified Chinese 香港繁體（香港小學學習字詞表標準）到簡體 */
     HK2S("hk2s.json"),
+    /** Traditional Chinese (Hong Kong variant) to Simplified Chinese with Mainland Chinese idiom 香港繁體到簡體並轉換爲中國大陸常用詞彙 */
+    HK2SP("hk2sp.json"),
     /** Traditional Chinese (Hong Kong variant) to Traditional Chinese 香港繁體（香港小學學習字詞表標準）到繁體 */
     HK2T("hk2t.json"),
     /** New Japanese Kanji (Shinjitai) to Traditional Chinese Characters (Kyūjitai) 日本漢字到繁體 */
     JP2T("jp2t.json"),
     /** Simplified Chinese to Traditional Chinese (Hong Kong Standard) 簡體到香港繁體（香港小學學習字詞表標準） */
     S2HK("s2hk.json"),
+    /** Simplified Chinese to Traditional Chinese (Hong Kong variant) with Hong Kong idiom 簡體到香港繁體並轉換爲香港常用詞彙 */
+    S2HKP("s2hkp.json"),
     /** Simplified Chinese to Traditional Chinese 簡體到繁體 */
     S2T("s2t.json"),
     /** Simplified Chinese to Traditional Chinese (Taiwan Standard) 簡體到臺灣正體 */
