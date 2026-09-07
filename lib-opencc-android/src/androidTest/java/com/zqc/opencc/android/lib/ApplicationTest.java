@@ -1,4 +1,4 @@
-package com.zqc.opencc.andorid.lib;
+package com.zqc.opencc.android.lib;
 
 import android.content.Context;
 
