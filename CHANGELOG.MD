@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of Modified UTF-8 strings, so dictionary entries such as 㓆 -> 𠗣
   match, and results containing such characters no longer trip CheckJNI or
   come back corrupted
+- A missing or corrupt dictionary file (for example after an interrupted
+  first-run copy) now raises `IllegalStateException` from
+  `ChineseConverter.convert()` instead of letting the C++ exception escape
+  JNI and kill the process
 - Use-after-free of the JNI text buffer in `ChineseConverter.convert()`, the
   cause of the SIGSEGV / bad_alloc / "not valid Modified UTF-8" crashes (#3)
 

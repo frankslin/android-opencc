@@ -1,7 +1,8 @@
 #include <jni.h>
 #include <string>
-#include "Converter.hpp"
 #include "Config.hpp"
+#include "Converter.hpp"
+#include "Exception.hpp"
 
 namespace {
 
@@ -78,6 +79,25 @@ jbyteArray NewUtf8Bytes(JNIEnv *env, const std::string &text) {
     return array;
 }
 
+/**
+ * Raises java.lang.IllegalStateException with the given message.
+ *
+ * OpenCC reports a missing or corrupt config / dictionary file by throwing
+ * (opencc::FileNotFound, opencc::InvalidFormat, ...). A C++ exception must not
+ * escape a JNI entry point: the runtime has no handler for it and calls
+ * std::terminate(), killing the whole process. Translating it lets the caller
+ * catch the failure, for example when the dictionary copy into the data
+ * folder was interrupted.
+ */
+void ThrowIllegalStateException(JNIEnv *env, const std::string &message) {
+    jclass clazz = env->FindClass("java/lang/IllegalStateException");
+    if (clazz == nullptr) {
+        return;  // NoClassDefFoundError is pending; let it propagate instead.
+    }
+    env->ThrowNew(clazz, message.c_str());
+    env->DeleteLocalRef(clazz);
+}
+
 } // namespace
 
 /**
@@ -108,11 +128,26 @@ Java_com_zqc_opencc_android_lib_ChineseConverter_convert(
         return nullptr;
     }
 
-    opencc::Config config;
-    opencc::ConverterPtr converter = config.NewFromFile(
-            std::string(absoluteDataFolderPath.c_str()) + "/" + std::string(configFile.c_str()));
+    const std::string configPath =
+            std::string(absoluteDataFolderPath.c_str()) + "/" + std::string(configFile.c_str());
 
-    const std::string converted = converter->Convert(text);
+    std::string converted;
+    try {
+        opencc::Config config;
+        opencc::ConverterPtr converter = config.NewFromFile(configPath);
+        converted = converter->Convert(text);
+    } catch (const opencc::Exception &e) {
+        // opencc::Exception does not derive from std::exception.
+        ThrowIllegalStateException(env, "OpenCC conversion with " + configPath + " failed: " + e.what());
+        return nullptr;
+    } catch (const std::exception &e) {
+        // marisa errors, std::bad_alloc, ...
+        ThrowIllegalStateException(env, "OpenCC conversion with " + configPath + " failed: " + e.what());
+        return nullptr;
+    } catch (...) {
+        ThrowIllegalStateException(env, "OpenCC conversion with " + configPath + " failed");
+        return nullptr;
+    }
 
     return NewUtf8Bytes(env, converted);
 }

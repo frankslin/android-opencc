@@ -24,6 +24,8 @@ public class ChineseConverter {
      * @param conversionType the conversion type
      * @param context        android context
      * @return the converted text
+     * @throws IllegalStateException if the dictionary data in the application's files
+     *                               directory is missing or corrupt and cannot be loaded
      */
     public static String convert(String text, ConversionType conversionType, Context context) {
         File lastDataFile = new File(context.getFilesDir() + "/openccdata/zFinished2");
