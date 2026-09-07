@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `hk2sp.json` configs that ship with OpenCC 1.4.2
 
 ### Changed
+- **minSdk is now 21** (was 14). NDK r26+ only builds for API 21 and up;
+  Android 5.0 and newer devices are unaffected
+- Toolchain: AGP 8.11.1, Gradle 8.14.3, JDK 17, compileSdk 35, NDK r27c
+  (27.2.12479018), CMake 3.22.1, Java 11 bytecode. Both modules declare a
+  `namespace`, the JitPack repository and Jetifier are gone from the build,
+  and the AndroidX test libraries / appcompat move to their current releases
 - Update the OpenCC submodule to upstream ver.1.4.2 (#1)
 - Regenerate the bundled dictionaries and configs from the ver.1.4.2
   submodule with the new `scripts/update-opencc-data.sh`. The previous data

@@ -92,11 +92,12 @@ submodule change.
 # Compilation
 
 The native part is built with CMake from `lib-opencc-android/src/main/jni/CMakeLists.txt`,
-which consumes the OpenCC submodule as a CMake subproject. You need the Android SDK
-(`ANDROID_HOME` or `sdk.dir` in `local.properties`) with the NDK and CMake versions
-pinned in `lib-opencc-android/build.gradle`; the Android Gradle Plugin downloads them
-on demand when the SDK licences are accepted, otherwise install them with
-`sdkmanager "ndk;21.1.6352462" "cmake;3.18.1"`.
+which consumes the OpenCC submodule as a CMake subproject. You need JDK 17 and the
+Android SDK (`ANDROID_HOME` or `sdk.dir` in `local.properties`) with the NDK and CMake
+versions pinned in `lib-opencc-android/build.gradle`; the Android Gradle Plugin
+downloads them on demand when the SDK licences are accepted, otherwise install them
+with `sdkmanager "ndk;27.2.12479018" "cmake;3.22.1"`. The library requires Android 5.0
+(API 21) or newer.
 
 Feel free to feedback if there are any issues, and hope this library can be useful for you.
 
