@@ -1,4 +1,6 @@
 #include <jni.h>
+#include <map>
+#include <mutex>
 #include <string>
 #include "Config.hpp"
 #include "Converter.hpp"
@@ -98,7 +100,46 @@ void ThrowIllegalStateException(JNIEnv *env, const std::string &message) {
     env->DeleteLocalRef(clazz);
 }
 
+/**
+ * Converters cached by config path.
+ *
+ * Config::NewFromFile() reads and deserialises every dictionary the config
+ * references (STPhrases alone is close to 1 MB), which took longer than the
+ * conversion itself on every call. A Converter is immutable once built and
+ * OpenCC guards the little internal state it keeps (thread-local marisa
+ * agents and match caches, a mutex around lazy lexicon reconstruction), so
+ * one instance per config can serve concurrent Convert() calls. The mutex
+ * only protects the map; conversion runs outside it on a shared_ptr copy,
+ * so clearing the cache while a conversion is in flight is safe too.
+ */
+std::mutex g_convertersMutex;
+std::map<std::string, opencc::ConverterPtr> g_converters;
+
+opencc::ConverterPtr GetConverter(const std::string &configPath) {
+    std::lock_guard<std::mutex> lock(g_convertersMutex);
+    auto it = g_converters.find(configPath);
+    if (it != g_converters.end()) {
+        return it->second;
+    }
+    opencc::Config config;
+    opencc::ConverterPtr converter = config.NewFromFile(configPath);
+    g_converters.emplace(configPath, converter);
+    return converter;
+}
+
 } // namespace
+
+/**
+ * Drops every cached Converter. Called by the Java side after the
+ * dictionary data on disk was removed or replaced, so the next conversion
+ * loads the new files instead of serving the old ones from memory.
+ */
+extern "C"
+void
+Java_com_zqc_opencc_android_lib_ChineseConverter_clearConverterCache(JNIEnv * /* env */, jclass /* clazz */) {
+    std::lock_guard<std::mutex> lock(g_convertersMutex);
+    g_converters.clear();
+}
 
 /**
  * The text crosses the JNI boundary as UTF-8 in a byte[] rather than as a
@@ -133,9 +174,7 @@ Java_com_zqc_opencc_android_lib_ChineseConverter_convert(
 
     std::string converted;
     try {
-        opencc::Config config;
-        opencc::ConverterPtr converter = config.NewFromFile(configPath);
-        converted = converter->Convert(text);
+        converted = GetConverter(configPath)->Convert(text);
     } catch (const opencc::Exception &e) {
         // opencc::Exception does not derive from std::exception.
         ThrowIllegalStateException(env, "OpenCC conversion with " + configPath + " failed: " + e.what());

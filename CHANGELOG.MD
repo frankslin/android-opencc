@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `hk2sp.json` configs that ship with OpenCC 1.4.2
 
 ### Changed
+- Converters are cached per conversion type in native memory, so only the
+  first conversion with a type pays for loading its dictionaries (about
+  150 ms for `s2twp` on a desktop JVM, more on a phone); later calls take
+  well under a millisecond. `ChineseConverter.clearConverterCache()` releases
+  the memory, and the cache is dropped automatically when the dictionary
+  data is re-installed or cleared
 - **minSdk is now 21** (was 14). NDK r26+ only builds for API 21 and up;
   Android 5.0 and newer devices are unaffected
 - Toolchain: AGP 8.11.1, Gradle 8.14.3, JDK 17, compileSdk 35, NDK r27c

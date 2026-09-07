@@ -67,8 +67,20 @@ public class ChineseConverter {
         synchronized (LOCK) {
             deleteRecursive(dataFolder(context));
             verifiedDataFolder = null;
+            clearConverterCache();
         }
     }
+
+    /**
+     * Releases the OpenCC converters kept in native memory.
+     *
+     * The first conversion with a given {@link ConversionType} loads that type's dictionaries
+     * (a few MB for the phrase-based types) and keeps the converter for later calls, which
+     * makes them fast. Call this from a low-memory callback such as
+     * {@code ComponentCallbacks2.onTrimMemory()} if the app wants that memory back; the next
+     * conversion reloads what it needs.
+     */
+    public static native void clearConverterCache();
 
     /**
      * The text is passed as UTF-8 bytes rather than as a String: JNI's string
@@ -110,6 +122,7 @@ public class ChineseConverter {
                         + (installedVersion.isEmpty() ? "" : " over " + installedVersion));
                 deleteRecursive(dataFolder);
                 installAssets(assetManager, dataFolder);
+                clearConverterCache();
             }
             verifiedDataFolder = path;
             return dataFolder;
