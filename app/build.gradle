@@ -28,7 +28,13 @@ android {
 }
 
 dependencies {
-    implementation project(':lib-opencc-android')
+    // `-PopenccArtifact=com.github.frankslin:android-opencc:<version>` swaps the
+    // module for the published AAR, which is how CI verifies a JitPack build.
+    if (project.hasProperty('openccArtifact')) {
+        implementation project.property('openccArtifact')
+    } else {
+        implementation project(':lib-opencc-android')
+    }
     implementation 'androidx.appcompat:appcompat:1.7.0'
     // appcompat 1.7.0 brings kotlin-stdlib 1.8.x, in which the jdk7/jdk8
     // classes were merged into the main artifact; older transitive

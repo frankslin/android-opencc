@@ -89,6 +89,13 @@ on a little-endian host with cmake, a C++17 compiler and python3. It builds Open
 configs and writes the `VERSION` marker, then commit the assets together with the
 submodule change.
 
+## Verifying a JitPack build
+
+The `JitPack` GitHub Actions workflow (`workflow_dispatch`, also run for every pushed
+tag) asks JitPack to build a given tag or commit, waits for it, prints JitPack's build
+log, then compiles the demo app against the published coordinates and checks that the
+AAR contains the native library for every ABI and the dictionary data.
+
 # Compilation
 
 The native part is built with CMake from `lib-opencc-android/src/main/jni/CMakeLists.txt`,

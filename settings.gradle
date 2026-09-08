@@ -11,6 +11,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Only for the JitPack verification build: `-PopenccArtifact=<coordinates>`
+        // makes the demo app consume the published AAR instead of the module.
+        if (providers.gradleProperty('openccArtifact').isPresent()) {
+            maven { url 'https://jitpack.io' }
+        }
     }
 }
 
