@@ -1,26 +1,43 @@
-apply plugin: 'com.android.application'
-
-android {
-    compileSdkVersion = 30
-    buildToolsVersion = "30.0.3"
-    ndkVersion "21.1.6352462"
-
-    defaultConfig {
-        applicationId "com.zqc.opencc.android"
-        minSdkVersion 15
-        targetSdkVersion 30
-    }
+plugins {
+    id 'com.android.application'
 }
 
-android.buildTypes {
-    release {
-        minifyEnabled = false
-        proguardFiles.add(file('proguard-rules.txt'))
+android {
+    namespace 'com.zqc.opencc.android'
+    compileSdk 35
+    // Only used to strip the library's native symbols when packaging.
+    ndkVersion '27.2.12479018'
+
+    defaultConfig {
+        applicationId 'com.zqc.opencc.android'
+        minSdk 21
+        targetSdk 35
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
 dependencies {
-    //implementation project(':lib-opencc-android')
-    implementation 'com.github.qichuan:android-opencc:1.2.0'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
+    // `-PopenccArtifact=com.github.frankslin:android-opencc:<version>` swaps the
+    // module for the published AAR, which is how CI verifies a JitPack build.
+    if (project.hasProperty('openccArtifact')) {
+        implementation project.property('openccArtifact')
+    } else {
+        implementation project(':lib-opencc-android')
+    }
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    // appcompat 1.7.0 brings kotlin-stdlib 1.8.x, in which the jdk7/jdk8
+    // classes were merged into the main artifact; older transitive
+    // kotlin-stdlib-jdk7/jdk8 1.6.x would otherwise duplicate them.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
 }

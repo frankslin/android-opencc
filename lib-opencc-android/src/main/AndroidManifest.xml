@@ -1,6 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zqc.opencc.android.lib">
-
-    <application />
-
-</manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

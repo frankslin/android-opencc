@@ -1,0 +1,13 @@
+# Build configuration for https://jitpack.io
+#
+# JitPack builds a Git tag into com.github.frankslin:android-opencc:<tag>.
+# The build needs the OpenCC submodule and JDK 17; the SDK platform, NDK and
+# CMake versions pinned in lib-opencc-android/build.gradle are downloaded by
+# the Android Gradle Plugin once the SDK licences are accepted.
+jdk:
+  - openjdk17
+before_install:
+  - git submodule update --init --recursive
+  - yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || yes | "$ANDROID_HOME/tools/bin/sdkmanager" --licenses > /dev/null || true
+install:
+  - ./gradlew :lib-opencc-android:publishToMavenLocal --no-daemon

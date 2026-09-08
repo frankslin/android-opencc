@@ -1,0 +1,118 @@
+name: JitPack
+
+# Verifies that JitPack can build this repository and that the artifact it
+# publishes is usable. JitPack builds a ref the first time somebody requests
+# it, so this workflow requests the POM for the ref, waits for the build,
+# prints JitPack's own build log, then compiles the demo app against the
+# published coordinates and inspects the AAR that Gradle downloaded.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tag or commit hash to build on JitPack (default: the commit this workflow runs on)"
+        required: false
+        default: ''
+  push:
+    tags:
+      - '*'
+
+jobs:
+  verify:
+    name: Build on JitPack and consume the artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GROUP: com.github.frankslin
+      ARTIFACT: android-opencc
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Pick the ref
+        id: ref
+        run: |
+          REF="${{ github.event.inputs.ref }}"
+          if [ -z "$REF" ]; then
+            case "$GITHUB_REF" in
+              refs/tags/*) REF="${GITHUB_REF#refs/tags/}" ;;
+              *) REF="$GITHUB_SHA" ;;
+            esac
+          fi
+          # JitPack addresses commits by their short (10 character) hash.
+          if echo "$REF" | grep -Eq '^[0-9a-f]{40}$'; then
+            REF="${REF:0:10}"
+          fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "Verifying $GROUP:$ARTIFACT:$REF"
+
+      - name: Ask JitPack to build the ref and wait for it
+        id: jitpack
+        run: |
+          REF='${{ steps.ref.outputs.ref }}'
+          BASE="https://jitpack.io/${GROUP//.//}/$ARTIFACT/$REF"
+          POM="$BASE/$ARTIFACT-$REF.pom"
+          echo "Requesting $POM"
+          # JitPack starts the build on the first request and answers 404 until
+          # it is done (a request can also block for a while). Poll for up to
+          # 40 minutes; an NDK build from a cold cache is slow.
+          for i in $(seq 1 80); do
+            CODE=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 300 "$POM" || echo 000)
+            echo "$(date -u +%H:%M:%S) attempt $i: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # A finished failed build has a log; keep polling while it is absent.
+            if curl -sSf --max-time 60 "$BASE/build.log" -o /tmp/build.log 2>/dev/null && grep -q "BUILD FAILED\|Build failed\|ERROR: No build artifacts found" /tmp/build.log; then
+              echo "status=failed" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "status=timeout" >> "$GITHUB_OUTPUT"
+
+      - name: Show JitPack's build log
+        if: always()
+        run: |
+          REF='${{ steps.ref.outputs.ref }}'
+          curl -sS --max-time 120 "https://jitpack.io/${GROUP//.//}/$ARTIFACT/$REF/build.log" | tail -n 200 || true
+          echo
+          echo "JitPack status: ${{ steps.jitpack.outputs.status }}"
+          [ "${{ steps.jitpack.outputs.status }}" = "ok" ]
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build the demo app against the JitPack artifact
+        run: |
+          # The OpenCC submodule is deliberately not checked out: the library
+          # module cannot be built here, so the app must resolve the artifact.
+          ./gradlew :app:assembleDebug --stacktrace \
+            "-PopenccArtifact=$GROUP:$ARTIFACT:${{ steps.ref.outputs.ref }}"
+
+      - name: Inspect the downloaded AAR
+        run: |
+          AAR=$(find ~/.gradle/caches/modules-2/files-2.1/$GROUP/$ARTIFACT -name '*.aar' | head -n 1)
+          [ -n "$AAR" ] || { echo "no AAR in the Gradle cache"; exit 1; }
+          echo "AAR: $AAR ($(stat -c %s "$AAR") bytes)"
+          unzip -l "$AAR" | grep -E 'classes.jar|jni/|assets/openccdata/(VERSION|s2t.json|STPhrases.ocd2)|proguard.txt'
+          fail=0
+          for abi in armeabi-v7a arm64-v8a x86 x86_64; do
+            unzip -l "$AAR" | grep -q "jni/$abi/libChineseConverter.so" || { echo "missing jni/$abi/libChineseConverter.so"; fail=1; }
+          done
+          unzip -l "$AAR" | grep -q "assets/openccdata/VERSION" || { echo "missing assets/openccdata/VERSION"; fail=1; }
+          unzip -l "$AAR" | grep -q "proguard.txt" || { echo "missing consumer proguard rules"; fail=1; }
+          unzip -p "$AAR" assets/openccdata/VERSION
+          exit $fail
+
+      - name: Check the APK contains the native library
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          unzip -l "$APK" | grep -E 'lib/.*/libChineseConverter.so|assets/openccdata/VERSION'

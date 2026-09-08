@@ -1,2 +1,24 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        google()
+        mavenCentral()
+        // Only for the JitPack verification build: `-PopenccArtifact=<coordinates>`
+        // makes the demo app consume the published AAR instead of the module.
+        if (providers.gradleProperty('openccArtifact').isPresent()) {
+            maven { url 'https://jitpack.io' }
+        }
+    }
+}
+
+rootProject.name = 'android-opencc'
 include ':lib-opencc-android'
 include ':app'

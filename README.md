@@ -6,9 +6,10 @@ An Android port to [OPENCC](https://github.com/BYVoid/OpenCC), a library to conv
 This project uses git submodules to download the source code from OpenCC, please use --recursive flag when cloning this project
 
 ```
- git clone git@github.com:qichuan/android-opencc.git --recursive
-
+git clone --recursive https://github.com/frankslin/android-opencc.git
 ```
+
+If you already cloned without `--recursive`, run `git submodule update --init --recursive`.
 
 ## Example
 ```
@@ -23,32 +24,38 @@ in Simplified Chinese and using Mainland China terminology
 
 # Installation
 
-Add it in your root build.gradle at the end of repositories:
+Releases are built by [JitPack](https://jitpack.io) from Git tags of this repository
+(`jitpack.yml`). Add JitPack to your repositories (settings.gradle
+`dependencyResolutionManagement`, or the root build.gradle on older setups):
 ```
-allprojects {
-	repositories {
-	...
-	    maven { url 'https://jitpack.io' }
-	}
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
 }
 ```
 
+and depend on a tag, or on a commit hash / `master-SNAPSHOT` before a tag exists:
 ```
-// Add the dependency
 dependencies {
-    ...
-	implementation 'com.github.qichuan:android-opencc:1.2.0'
+    implementation 'com.github.frankslin:android-opencc:<tag>'
 }
 ```
+
+The library needs Android 5.0 (API 21) or newer. The older
+`com.github.qichuan:android-opencc:1.2.0` artifact predates every fix in this
+repository. Alternatively add this repository as a git submodule and
+`include ':lib-opencc-android'` from your settings.gradle.
 
 # Usage
-To use Chinese converter is easy, just call `ChineseConverter.convert(originalText, conversionType, context));`
+To use Chinese converter is easy, just call `ChineseConverter.convert(originalText, conversionType, context)`.
 
-## Supported conversation types
+## Supported conversion types
 - HK2S, Traditional Chinese (Hong Kong Standard) to Simplified Chinese 香港繁體（香港小學學習字詞表標準）到簡體
+- HK2SP, Traditional Chinese (Hong Kong variant) to Simplified Chinese with Mainland Chinese idiom 香港繁體到簡體並轉換爲中國大陸常用詞彙
 - HK2T, Traditional Chinese (Hong Kong variant) to Traditional Chinese 香港繁體（香港小學學習字詞表標準）到繁體
 - JP2T, New Japanese Kanji (Shinjitai) to Traditional Chinese Characters (Kyūjitai) 日本漢字到繁體
 - S2HK, Simplified Chinese to Traditional Chinese (Hong Kong Standard) 簡體到香港繁體（香港小學學習字詞表標準）
+- S2HKP, Simplified Chinese to Traditional Chinese (Hong Kong variant) with Hong Kong idiom 簡體到香港繁體並轉換爲香港常用詞彙
 - S2T, Simplified Chinese to Traditional Chinese 簡體到繁體
 - S2TW, Simplified Chinese to Traditional Chinese (Taiwan Standard) 簡體到臺灣正體
 - S2TWP, Simplified Chinese to Traditional Chinese (Taiwan Standard) with Taiwanese idiom 簡體到繁體（臺灣正體標準）並轉換爲臺灣常用詞彙
@@ -64,15 +71,40 @@ To use Chinese converter is easy, just call `ChineseConverter.convert(originalTe
 
 android-opencc leverages on the original OpenCC project and invoke the native code via JNI, the text phrase dictionary files are shipped in the assets folder. Android NDK does not provide means to create and read file streams from directly from assets folder, therefore the dictionary files are then copied to the application data folder in the first call of `ChineseConverter.convert()`
 
-If you need to update the dictionary files in the assets folder, please remember to call `ChineseConverter.clearDictDataFolder()` once to clear the old dictionary files, so the new dictionary files will be effective in the next `ChineseConverter.convert()` call.
+The first conversion with a given type loads that type's dictionaries and keeps the converter in native memory (a few MB for the phrase-based types), so later conversions are fast. Call `ChineseConverter.clearConverterCache()` from a low-memory callback if you want that memory back; the next conversion reloads it.
+
+The `openccdata/VERSION` file records which dictionary data is bundled. On the first `ChineseConverter.convert()` call in each process the library compares it with the copy in the application data folder and re-installs the data when they differ, so upgrading the library (or replacing the assets and changing `VERSION`) takes effect on its own. `ChineseConverter.clearDictDataFolder()` is still available to force a re-install but is no longer needed after an upgrade.
+
+# Updating the dictionary data
+
+The dictionaries and configs under `lib-opencc-android/src/main/assets/openccdata` are
+generated from the OpenCC submodule. After bumping the submodule, run
+
+```
+scripts/update-opencc-data.sh
+```
+
+on a little-endian host with cmake, a C++17 compiler and python3. It builds OpenCC's
+`opencc_dict` for the host, compiles every dictionary to `.ocd2`, copies the conversion
+configs and writes the `VERSION` marker, then commit the assets together with the
+submodule change.
+
+## Verifying a JitPack build
+
+The `JitPack` GitHub Actions workflow (`workflow_dispatch`, also run for every pushed
+tag) asks JitPack to build a given tag or commit, waits for it, prints JitPack's build
+log, then compiles the demo app against the published coordinates and checks that the
+AAR contains the native library for every ABI and the dictionary data.
 
 # Compilation
 
-You need the Android NDK for compilation, please download the [NDK](http://developer.android.com/ndk/downloads/index.html) and configure the path to NDK in `local.properties` file.
-
-# Example apk
-
-[Download here](https://www.dropbox.com/s/0qzcmchqf5hqyit/android-opencc-0.6.0.apk?dl=1)
+The native part is built with CMake from `lib-opencc-android/src/main/jni/CMakeLists.txt`,
+which consumes the OpenCC submodule as a CMake subproject. You need JDK 17 and the
+Android SDK (`ANDROID_HOME` or `sdk.dir` in `local.properties`) with the NDK and CMake
+versions pinned in `lib-opencc-android/build.gradle`; the Android Gradle Plugin
+downloads them on demand when the SDK licences are accepted, otherwise install them
+with `sdkmanager "ndk;27.2.12479018" "cmake;3.22.1"`. The library requires Android 5.0
+(API 21) or newer.
 
 Feel free to feedback if there are any issues, and hope this library can be useful for you.
 

@@ -16,61 +16,41 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
+    /** Every conversion type the library offers, in the order the spinner shows them. */
+    private static final ConversionType[] TYPES = ConversionType.values();
+
     private ConversionType currentConversionType = ConversionType.TW2SP;
 
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        String[] labels = new String[TYPES.length];
+        int initialPosition = 0;
+        for (int i = 0; i < TYPES.length; i++) {
+            labels[i] = TYPES[i].name() + "  " + describe(TYPES[i]);
+            if (TYPES[i] == currentConversionType) {
+                initialPosition = i;
+            }
+        }
+
         Spinner spinner = findViewById(R.id.spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.conversion_type_array, android.R.layout.simple_spinner_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, labels);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-
+        spinner.setSelection(initialPosition);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                switch (position) {
-                    case 0:
-                        currentConversionType = ConversionType.TW2SP;
-                        break;
-                    case 1:
-                        currentConversionType = ConversionType.S2HK;
-                        break;
-                    case 2:
-                        currentConversionType = ConversionType.S2T;
-                        break;
-                    case 3:
-                        currentConversionType = ConversionType.S2TW;
-                        break;
-                    case 4:
-                        currentConversionType = ConversionType.S2TWP;
-                        break;
-                    case 5:
-                        currentConversionType = ConversionType.T2HK;
-                        break;
-                    case 6:
-                        currentConversionType = ConversionType.T2S;
-                        break;
-                    case 7:
-                        currentConversionType = ConversionType.T2TW;
-                        break;
-                    case 8:
-                        currentConversionType = ConversionType.TW2S;
-                        break;
-                    case 9:
-                        currentConversionType = ConversionType.HK2S;
-                        break;
-                }
+                currentConversionType = TYPES[position];
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 
@@ -78,12 +58,40 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.btn).setOnClickListener(v -> {
             String originalText = textView.getText().toString();
-            Runnable runnable = () -> {
-                final String converted = ChineseConverter.convert(originalText,
-                        currentConversionType, getApplicationContext());
+            ConversionType type = currentConversionType;
+            executorService.execute(() -> {
+                final String converted = ChineseConverter.convert(originalText, type,
+                        getApplicationContext());
                 textView.post(() -> textView.setText(converted));
-            };
-            executorService.execute(runnable);
+            });
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        executorService.shutdown();
+        super.onDestroy();
+    }
+
+    private static String describe(ConversionType type) {
+        switch (type) {
+            case HK2S:  return "香港繁體到簡體";
+            case HK2SP: return "香港繁體到簡體，並轉爲大陸常用詞彙";
+            case HK2T:  return "香港繁體到繁體";
+            case JP2T:  return "日本漢字到繁體";
+            case S2HK:  return "簡體到香港繁體";
+            case S2HKP: return "簡體到香港繁體，並轉爲香港常用詞彙";
+            case S2T:   return "簡體到繁體";
+            case S2TW:  return "簡體到臺灣正體";
+            case S2TWP: return "簡體到臺灣正體，並轉爲臺灣常用詞彙";
+            case T2HK:  return "繁體到香港繁體";
+            case T2S:   return "繁體到簡體";
+            case T2TW:  return "繁體到臺灣正體";
+            case T2JP:  return "繁體到日本漢字";
+            case TW2S:  return "臺灣正體到簡體";
+            case TW2T:  return "臺灣正體到繁體";
+            case TW2SP: return "臺灣正體到簡體，並轉爲大陸常用詞彙";
+            default:    return type.getValue();
+        }
     }
 }
